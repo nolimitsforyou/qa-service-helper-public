@@ -1,0 +1,10 @@
+.git
+.idea
+.gradle
+allure-results
+
+*.remote.properties
+*.local.properties
+*.log
+*.iml
+*.png

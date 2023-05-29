@@ -1,0 +1,29 @@
+default-app:
+  wildcard_secret:
+    dev: "qa-dev-wilcard-tls"
+    rc: "qa-rc-wilcard-tls"
+  webapp:
+    enable: true
+    ingress:
+      public:
+        _default: { }
+        prod:
+    containers:
+      nginx:
+        enable: false
+      app:
+        probeEnable: false
+        containerPort: 8080
+        cfg:
+          workingDir: /app
+          command: [ "java" ]
+          args:
+            - '-jar'
+            - '/app/build/libs/qa-service-helper-2.3.0.jar'
+        env:
+          - name: APPLICATION_NAME
+            value: 'webapp'
+          - name: WORK_MODE
+            value: 'webapp'
+  scheduleapp:
+    enable: false

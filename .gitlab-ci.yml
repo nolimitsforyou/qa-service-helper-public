@@ -1,0 +1,69 @@
+---
+variables:
+  DEPLOYMENT_TYPE: k8s
+  DOCKER_IMAGE: ${WERF_APP_DOCKER_IMAGE_NAME}
+  DOCKER_IMAGE_WITHOUT_TAG: ${WERF_REPO}
+  DEPLOY_USE_SERVICE_CHECKS_HTTP_STATUS: "false"
+  DEPLOY_ENABLE_GRAB_INTERNAL_METRICS: "0"
+  TECHNOLOGY: ""
+  PRODUCT_NAME: "qa"
+  SERVICE_NAME: "service-helper"
+
+include:
+  - project: 'dev/ci-receipts'
+    file: '/gitlab/.gitlab-ci-base.yml'
+
+lint-yaml:
+  tags:
+    - docker-runner
+    - linux
+  stage: pre-build
+  variables:
+    BASE_CONFIG_YAMLLINT: |
+      ---
+      extends: default
+      rules:
+        line-length: disable
+        empty-lines: disable
+        new-lines: disable
+      ignore: |
+        .yamllint
+        .helm/
+        werf.yaml
+        werf-giterminism.yaml
+  image: docker-registry.some.url/sdesbure-yamllint
+  before_script:
+    - \[ -f .yamllint \] || echo "$BASE_CONFIG_YAMLLINT" > .yamllint
+  script:
+    - yamllint .
+  only:
+    changes:
+      - '*.yaml'
+      - '*.yml'
+      - '.yamllint'
+  except:
+    - /^*/
+
+deploy-dev-k8s:
+  environment:
+    url: ${DEPLOY_RESULT_URL_SCHEME}://${SHORT_REF_SLUG}-${SERVICE_NAME}-${PRODUCT_NAME}.${WERF_ENV}.${PRODUCT_NAME}.aservices.tech/
+  variables:
+    DEPLOY_RESULT_URL: ${DEPLOY_RESULT_URL_SCHEME}://${SHORT_REF_SLUG}-${SERVICE_NAME}-${PRODUCT_NAME}.${WERF_ENV}.${PRODUCT_NAME}.aservices.tech/
+
+deploy-dev-master-k8s:
+  environment:
+    url: ${DEPLOY_RESULT_URL_SCHEME}://${SERVICE_NAME}-${PRODUCT_NAME}.${WERF_ENV}.${PRODUCT_NAME}.aservices.tech/
+  variables:
+    DEPLOY_RESULT_URL: ${DEPLOY_RESULT_URL_SCHEME}://${SERVICE_NAME}-${PRODUCT_NAME}.${WERF_ENV}.${PRODUCT_NAME}.aservices.tech/
+
+deploy-rc-k8s:
+  environment:
+    url: ${DEPLOY_RESULT_URL_SCHEME}://release-${SERVICE_NAME}-${PRODUCT_NAME}.${WERF_ENV}.${PRODUCT_NAME}.aservices.tech/
+  variables:
+    DEPLOY_RESULT_URL: ${DEPLOY_RESULT_URL_SCHEME}://release-${SERVICE_NAME}-${PRODUCT_NAME}.${WERF_ENV}.${PRODUCT_NAME}.aservices.tech/
+
+deploy-rc-master-k8s:
+  environment:
+    url: ${DEPLOY_RESULT_URL_SCHEME}://stable-${SERVICE_NAME}-${PRODUCT_NAME}.${WERF_ENV}.${PRODUCT_NAME}.aservices.tech/
+  variables:
+    DEPLOY_RESULT_URL: ${DEPLOY_RESULT_URL_SCHEME}://stable-${SERVICE_NAME}-${PRODUCT_NAME}.${WERF_ENV}.${PRODUCT_NAME}.aservices.tech/

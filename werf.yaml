@@ -1,0 +1,32 @@
+configVersion: 1
+project: {{ printf "%s-%s" (env "PRODUCT_NAME") (env "SERVICE_NAME") }}
+---
+artifact: build
+from: docker-registry.some.url/gradle:7-jdk11
+git:
+- add: /
+  to: /home/gradle
+  includePaths:
+    - "src"
+    - "gradle.properties"
+    - "build.gradle.kts"
+    - "settings.gradle.kts"
+    - "webpack.config.d"
+  stageDependencies:
+    install:
+    - "**/*"
+shell:
+  install: |
+    cd /home/gradle
+    gradle -Pprod=true clean jar
+---
+image: app
+from: docker-registry.some.url/openjdk:11
+docker:
+  WORKDIR: /app
+  CMD: java -jar /app/build/libs/qa-service-helper-2.3.0.jar
+import:
+- artifact: build
+  add: /home/gradle
+  to: /app
+  before: install

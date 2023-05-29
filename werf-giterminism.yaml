@@ -1,0 +1,16 @@
+giterminismConfigVersion: 1
+config:
+  allowUncommitted: true
+  allowUncommittedTemplates:
+    - ".werf/**/*.tmpl"
+  goTemplateRendering:
+    allowEnvVariables:
+      - "SERVICE_NAME"
+      - "PRODUCT_NAME"
+      - "K8S_QUAY_REGISTRY"
+helm:
+  allowUncommittedFiles:
+    - ".helm/*.yml"
+    - ".helm/Chart.lock"
+    - ".helm/Chart.yaml"
+    - ".helm/charts"
